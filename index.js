@@ -11,50 +11,56 @@ const port = process.env.PORT || 4040;
 const hook = process.env.WEBHOOK_URL;
 const { BOT_TOKEN, SERVER_URL } = process.env;
 
-const TELEGRAM_API = https://api.telegram.org/bot${BOT_TOKEN};
-const URI = /webhook/${BOT_TOKEN};
+const TELEGRAM_API = `https://api.telegram.org/bot${BOT_TOKEN}`;
+const URI = `/webhook/${BOT_TOKEN}`;
 const WEBHOOK_URL = SERVER_URL + URI;
 
 app.use(express.json());
 app.use(bodyParser.json());
+
 const init = async () => {
-    const res = await axios.get(${TELEGRAM_API}/setWebhook?url=${WEBHOOK_URL});
-    console.log(res.data);
+    try {
+        const res = await axios.get(`${TELEGRAM_API}/setWebhook?url=${WEBHOOK_URL}`);
+        console.log('Webhook set:', res.data);
+    } catch (error) {
+        console.error('Error setting webhook:', error);
+    }
 };
 
-app.listen(process.env.PORT || 5000, async () => {
-    console.log('app is running on port', process.env.PORT || 5000);
+app.listen(port, async () => {
+    console.log('App is running on port', port);
     await init();
 });
 
-const bot = new Telegraf(process.env.BOT_TOKEN);
+const bot = new Telegraf(BOT_TOKEN);
 
 const web_link = "https://godzillaonton.netlify.app/";
 
+// Define the URL of the image you want to send
+const imageUrl = "https://i.postimg.cc/y6kn1gCV/Untitled-design-7.png"; // 📌 **Replace this with your actual image URL**
+
 bot.start((ctx) => {
     const startPayload = ctx.startPayload;
-    const urlSent = ${web_link}?ref=${startPayload};
+    const urlSent = `${web_link}?ref=${startPayload}`;
     const user = ctx.message.from;
-    const userName = user.username ? @${user.username} : user.first_name;
-    ctx.replyWithMarkdown(*Hey, ${userName}! Welcome to $GODZ Tap App!*, {
+    const userName = user.username ? `@${user.username}` : user.first_name;
+
+    // Send the image with caption and inline keyboard
+    ctx.replyWithPhoto(imageUrl, {
+        caption: `*Hey, ${userName}! Welcome to $GODZ Tap App!*\n\n`,
+        parse_mode: "Markdown",
         reply_markup: {
             inline_keyboard: [
-                [{ text: "Play now!", web_app: { url: urlSent } }],
-                [{ text: " Join Our Telegram Channel ", url: "https://t.me/gozillaontonportal" }]
-            ],
-            in: true
-        },
+                [{ text: "⚡️Play now!⚡️", web_app: { url: urlSent } }],
+                [{ text: "🧩 Join Our Telegram Channel 🧩", url: "https://t.me/gozillaontonportal" }]
+                // [{ text: "Bot App Demo 2 🧩", web_app: { url: urlSentTwo } }],
+            ]
+        }
     });
 });
 
-// Command to send a picture
-bot.command('sendphoto', (ctx) => {
-    const photoUrl = 'https://i.postimg.cc/y6kn1gCV/Untitled-design-7.png'; // Replace with your image URL
-    ctx.replyWithPhoto(photoUrl, { caption: 'Here is your photo!' });
-});
-
 app.get("/", async (req, res) => {
-    res.send("Hello Get me here I work fine");
+    res.send("Hello! Get me here I work fine.");
 });
 
 app.post(URI, (req, res) => {
